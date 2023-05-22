@@ -63,6 +63,11 @@ class CCheckout extends GetxController {
     }
   }
 
+  refreshTotal()async{
+    _totalHarga.value = 0;
+    _totalPembayaran.value = 0; 
+  }
+
   resetCheckout() {
     _checkout.value.clear();
     _id.value = 1;

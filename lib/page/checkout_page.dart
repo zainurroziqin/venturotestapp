@@ -27,10 +27,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   TextEditingController voucherController = TextEditingController();
 
-  refresh() {
-    cItems.getListItems();
-  }
-
   getVoucher() async {
     await cItems.getVoucher(voucherController.text);
     if (cItems.successVoucher) {
@@ -52,7 +48,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       items.add(Item(
           id: checkout.item.id,
           harga: checkout.item.harga,
-          catatan: checkout.catatan ?? "Catatan tidak ada"));
+          catatan: checkout.catatan == "" ? "Catatan tidak ada" : checkout.catatan!));
     }
 
     var sendData = SendData(
@@ -79,6 +75,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
   }
 
+  refresh()async{
+    cItems.getListItems();
+    cItems.refreshTotal();
+    cItems.resetCheckout();
+  }
+
   @override
   void initState() {
     refresh();
@@ -93,217 +95,217 @@ class _CheckoutPageState extends State<CheckoutPage> {
       resizeToAvoidBottomInset: false,
       body: SafeArea(
           bottom: false,
-          child: GetBuilder<CCheckout>(builder: (_) {
-            if (_.loading) return DView.loadingCircle();
-            if (_.listItems.isEmpty) return DView.empty('Kosong');
-            return Stack(
-              children: [
-                Column(
-                  children: [
-                    Expanded(
-                        child: RefreshIndicator(
-                      onRefresh: () async => refresh(),
-                      child: ListView.builder(
-                        itemCount: _.listItems.length,
-                        itemBuilder: (context, index) {
-                          Items items = _.listItems[index];
-                          return CheckoutCard(
-                            item: items,
-                          );
-                        },
-                      ),
-                    )),
-                  ],
-                ),
-                Positioned(
-                  bottom: 0,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          child: RefreshIndicator(
+            onRefresh: () => refresh(),
+            child: GetBuilder<CCheckout>(builder: (_) {
+              if (_.loading) return DView.loadingCircle();
+              if (_.listItems.isEmpty) return DView.empty('Kosong');
+              return Stack(
+                children: [
+                  Column(
                     children: [
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 18.w),
-                        child: SizedBox(
-                          height: 40,
-                          width: MediaQuery.of(context).size.width - 36.w,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      "Total Pesanan ",
-                                      style: GoogleFonts.montserrat(
-                                          fontSize: 16.sp,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                    Text("4 (Menu)",
-                                        style: GoogleFonts.montserrat(
-                                            fontSize: 16.sp,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w400)),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                AppFormat.currency(_.totalHarga.toString()),
-                                style: GoogleFonts.montserrat(
-                                    fontSize: 14.sp,
-                                    color: Colors.blue,
-                                    fontWeight: FontWeight.w700),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 10.w,
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          showVoucher();
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: 18.w,
-                          ),
+                      Expanded(
+                          child: ListView.builder(
+                            itemCount: _.listItems.length,
+                            itemBuilder: (context, index) {
+                              Items items = _.listItems[index];
+                              return CheckoutCard(
+                                item: items,
+                              );
+                            },
+                          )),
+                    ],
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 18.w),
                           child: SizedBox(
                             height: 40,
                             width: MediaQuery.of(context).size.width - 36.w,
                             child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 Expanded(
                                   child: Row(
                                     children: [
-                                      Image.asset("assets/voucher.png"),
-                                      SizedBox(
-                                        width: 12.w,
-                                      ),
-                                      Text("Voucher",
-                                          style: GoogleFonts.montserrat(
-                                            fontSize: 18.sp,
+                                      Text(
+                                        "Total Pesanan ",
+                                        style: GoogleFonts.montserrat(
+                                            fontSize: 16.sp,
                                             color: Colors.black,
-                                            fontWeight: FontWeight.w600,
-                                          )),
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                      Text("4 (Menu)",
+                                          style: GoogleFonts.montserrat(
+                                              fontSize: 16.sp,
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w400)),
                                     ],
                                   ),
                                 ),
-                                Row(
-                                  children: [
-                                    _.successVoucher
-                                        ? Column(
-                                            children: [
-                                              Text("${_.voucher.kode}",
-                                                  style: GoogleFonts.montserrat(
-                                                    fontSize: 12.sp,
-                                                    color: Colors.black,
-                                                    fontWeight: FontWeight.w400,
-                                                  )),
-                                              Text(
-                                                  AppFormat.currency(_
-                                                      .voucher.nominal
-                                                      .toString()),
-                                                  style: GoogleFonts.montserrat(
-                                                    fontSize: 12.sp,
-                                                    color: Colors.red,
-                                                    fontWeight: FontWeight.w400,
-                                                  )),
-                                            ],
-                                          )
-                                        : Text("Input Voucher",
-                                            style: GoogleFonts.montserrat(
-                                              fontSize: 12.sp,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w500,
-                                            )),
-                                    const Icon(Icons.arrow_forward_ios)
-                                  ],
-                                ),
+                                Text(
+                                  AppFormat.currency(_.totalHarga.toString()),
+                                  style: GoogleFonts.montserrat(
+                                      fontSize: 14.sp,
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.w700),
+                                )
                               ],
                             ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        height: 8.h,
-                      ),
-                      Container(
-                        width: 428.w,
-                        height: 80,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(30.w),
-                                topRight: Radius.circular(30.w)),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.grey.withOpacity(0.3),
-                                  blurRadius: 12.0)
-                            ]),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 18.w),
-                          child: Row(children: [
-                            Image.asset("assets/keranjang.png"),
-                            SizedBox(
-                              width: 8.w,
+                        SizedBox(
+                          height: 10.w,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            showVoucher();
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              left: 18.w,
                             ),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            child: SizedBox(
+                              height: 40,
+                              width: MediaQuery.of(context).size.width - 36.w,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  SizedBox(
-                                    height: 24.h,
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Image.asset("assets/voucher.png"),
+                                        SizedBox(
+                                          width: 12.w,
+                                        ),
+                                        Text("Voucher",
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 18.sp,
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w600,
+                                            )),
+                                      ],
+                                    ),
                                   ),
-                                  Text(
-                                    "Total Pembayaran",
-                                    style: GoogleFonts.montserrat(
-                                        fontSize: 12.sp,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w500),
+                                  Row(
+                                    children: [
+                                      _.successVoucher
+                                          ? Column(
+                                              children: [
+                                                Text("${_.voucher.kode}",
+                                                    style: GoogleFonts.montserrat(
+                                                      fontSize: 12.sp,
+                                                      color: Colors.black,
+                                                      fontWeight: FontWeight.w400,
+                                                    )),
+                                                Text(
+                                                    AppFormat.currency(_
+                                                        .voucher.nominal
+                                                        .toString()),
+                                                    style: GoogleFonts.montserrat(
+                                                      fontSize: 12.sp,
+                                                      color: Colors.red,
+                                                      fontWeight: FontWeight.w400,
+                                                    )),
+                                              ],
+                                            )
+                                          : Text("Input Voucher",
+                                              style: GoogleFonts.montserrat(
+                                                fontSize: 12.sp,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.w500,
+                                              )),
+                                      const Icon(Icons.arrow_forward_ios)
+                                    ],
                                   ),
-                                  Text(
-                                    AppFormat.currency(
-                                        _.totalPembayaran.toString()),
-                                    style: GoogleFonts.montserrat(
-                                        fontSize: 20.sp,
-                                        color: Colors.blue,
-                                        fontWeight: FontWeight.w700),
-                                  )
                                 ],
                               ),
                             ),
-                            GestureDetector(
-                              onTap: () {
-                                postData();
-                              },
-                              child: Container(
-                                width: 200.w,
-                                height: 50.h,
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(30),
-                                    color: Colors.blue),
-                                child: Center(
-                                  child: Text(
-                                    'Pesan Sekarang',
-                                    style: GoogleFonts.montserrat(
-                                        fontSize: 14.sp,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500),
-                                  ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 8.h,
+                        ),
+                        Container(
+                          width: 428.w,
+                          height: 80,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(30.w),
+                                  topRight: Radius.circular(30.w)),
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    blurRadius: 12.0)
+                              ]),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 18.w),
+                            child: Row(children: [
+                              Image.asset("assets/keranjang.png"),
+                              SizedBox(
+                                width: 8.w,
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      height: 24.h,
+                                    ),
+                                    Text(
+                                      "Total Pembayaran",
+                                      style: GoogleFonts.montserrat(
+                                          fontSize: 12.sp,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    Text(
+                                      AppFormat.currency(
+                                          _.totalPembayaran.toString()),
+                                      style: GoogleFonts.montserrat(
+                                          fontSize: 20.sp,
+                                          color: Colors.blue,
+                                          fontWeight: FontWeight.w700),
+                                    )
+                                  ],
                                 ),
                               ),
-                            )
-                          ]),
-                        ),
-                      )
-                    ],
+                              GestureDetector(
+                                onTap: () {
+                                  postData();
+                                },
+                                child: Container(
+                                  width: 200.w,
+                                  height: 50.h,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(30),
+                                      color: Colors.blue),
+                                  child: Center(
+                                    child: Text(
+                                      'Pesan Sekarang',
+                                      style: GoogleFonts.montserrat(
+                                          fontSize: 14.sp,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ]),
+                          ),
+                        )
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          })),
+                ],
+              );
+            }),
+          )),
     );
   }
 

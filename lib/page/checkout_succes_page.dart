@@ -114,7 +114,7 @@ class _CheckoutSuccessPageState extends State<CheckoutSuccessPage> {
                                           color: Colors.black,
                                           fontWeight: FontWeight.w600),
                                     ),
-                                    Text("4 (Menu)",
+                                    Text(_.checkout.length.toString(),
                                         style: GoogleFonts.montserrat(
                                             fontSize: 16.sp,
                                             color: Colors.black,
@@ -138,7 +138,7 @@ class _CheckoutSuccessPageState extends State<CheckoutSuccessPage> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          showVoucher();
+                          // showVoucher();
                         },
                         child: Padding(
                           padding: EdgeInsets.only(
